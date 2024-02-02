@@ -1,0 +1,16 @@
+---
+- name: Docker Installation Bitwarden
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: BITWARDEN_ADMIN_PAGE
+      prompt: Do you want enable the Admin Page (yes/no) ?
+      default: "{{ BITWARDEN_ADMIN_PAGE }}"
+      private: no
+    - name: BITWARDEN_APP_ADMINPASS_PAGE
+      prompt: Enter the admin password for Bitwarden Admin Page
+      default: "{{ BITWARDEN_APP_ADMINPASS_PAGE }}"
+      confirm: true
+  roles:
+    - docker_install_bitwarden
+

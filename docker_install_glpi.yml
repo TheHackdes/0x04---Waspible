@@ -1,0 +1,10 @@
+---
+- name: Docker Installation GLPI
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: GLPI_DB_ADMINPASS
+      prompt: Enter the SQL Password for GLPI DB
+      default: "{{ GLPI_DB_ADMINPASS }}"
+  roles:
+    - docker_install_glpi

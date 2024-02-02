@@ -1,0 +1,9 @@
+---
+# defaults file for roles/docker_install_glpi
+
+KOPIA_IP_APP:      10.0.29.10
+KOPIA_IP_NGINX:    10.0.20.29
+KOPIA_IP_SUBNET:   10.0.29.0/24
+
+KOPIA_APP_USERPASS: KOPIADBPa$$w0rd
+KOPIA_APP_USERNAME: admin

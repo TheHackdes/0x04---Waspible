@@ -1,0 +1,17 @@
+---
+- name: Docker Installation Dolibarr
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: DOLIBARR_USERNAME
+      prompt: Enter the dolibarr login 
+      default: "{{ DOLIBARR_USERNAME }}"
+      private: no
+    - name: DOLIBARR_PASSWORD_APP
+      prompt: Enter the doliabrr password 
+      default: "{{ DOLIBARR_PASSWORD_APP }}"
+    - name: DOLIBARR_PASSWORD_DB
+      prompt: Enter the database doliabrr password 
+      default: "{{ DOLIBARR_PASSWORD_DB }}"
+  roles:
+    - docker_install_dolibarr

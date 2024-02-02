@@ -1,0 +1,9 @@
+---
+# defaults file for roles/docker_install_glpi
+
+GLPI_IP_APP:      10.0.25.10
+GLPI_IP_DB:       10.0.25.11
+GLPI_IP_NGINX:    10.0.20.25
+GLPI_IP_SUBNET:   10.0.25.0/24
+
+GLPI_DB_ADMINPASS: GLPIDBPa$$w0rd

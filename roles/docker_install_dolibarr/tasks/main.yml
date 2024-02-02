@@ -1,0 +1,62 @@
+---
+# Variable DOLIBARR_APP_ADMINAME     in docker_install_dolibarr.yml 
+# Variable DOLIBARR_APP_ADMINPASS  in docker_install_dolibarr.yml 
+# Variable DOLIBARR_DB_ADMINPASS     in docker_install_dolibarr.yml 
+
+- name: Create Network Dolibarr
+  docker_network:
+    name: network_dolibarr
+    ipam_config:
+      - subnet: "{{ DOLIBARR_IP_SUBNET }}"
+
+- name: Create Volume dolibarr
+  docker_volume:
+    name: "{{ item }}"
+  with_items:
+    - volume_dolibarr_app
+    - volume_dolibarr_app_conf
+
+- name: Create Container Mariadb for Dolibarr
+  docker_container:
+    name: dolibarr_db
+    image: mariadb:latest
+    state: started
+    restart_policy: always
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ DOLIBARR_DB_ADMINPASS }}"
+      MYSQL_DATABASE: "dolibarr"
+    networks:
+      - name: network_dolibarr
+        ipv4_address: "{{ DOLIBARR_IP_DB }}"
+        aliases:
+          - dolibarr_db
+
+
+- name: Create Container Dolibarr
+  docker_container:
+    name: dolibarr_app
+    image: tuxgasy/dolibarr
+    state: started
+    restart_policy: always
+    env:
+      DOLI_DB_HOST: "dolibarr_db"
+      DOLI_DB_USER: "root"
+      DOLI_DB_PASSWORD: "{{ DOLIBARR_DB_ADMINPASS }}"
+      DOLI_DB_NAME: "dolibarr"
+      DOLI_ADMIN_LOGIN: "{{ DOLIBARR_APP_ADMINAME }}"
+      DOLI_ADMIN_PASSWORD: "{{ DOLIBARR_APP_ADMINPASS }}"
+      PHP_INI_DATE_TIMEZONE: "Europe/Paris"
+    volumes: 
+      - volume_dolibarr_app:/var/www/documents
+      - volume_dolibarr_app_conf:/var/www/html/conf/
+    networks:
+      - name: network_dolibarr
+        ipv4_address: "{{ DOLIBARR_IP_APP }}"
+        aliases:
+          - dolibarr_app
+      - name: network_nginx
+        ipv4_address: "{{ DOLIBARR_IP_NGINX }}"
+        aliases:
+          - dolibarr_app
+    links:
+      - "dolibarr_db:dolibarr_db"

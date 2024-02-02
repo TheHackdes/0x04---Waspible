@@ -1,0 +1,67 @@
+version: '3.5'
+services:
+  openldap_app:
+    image: 'osixia/openldap:latest'
+    hostname: openldap_app
+    container_name: openldap_app
+    restart: always
+    environment:
+     TZ: "Europe/Paris"
+     LDAP_ORGANISATION: "${OPENLDAP_APP_ORGANISATION_NAME}"
+     LDAP_DOMAIN: "${OPENLDAP_APP_DOMAIN}"
+     LDAP_ADMIN_PASSWORD: "${OPENLDAP_APP_ADMINPASS}"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - volume_openldap_db:/var/lib/ldap
+      - volume_openldap_conf:/etc/ldap/slapd.d
+    networks:
+      network_openldap:
+        ipv4_address: ${OPENLDAP_IP_APP}
+        aliases:
+          - openldap_app
+  phpldapadmin_app:
+    image: 'osixia/phpldapadmin:latest'
+    hostname: phpldapadmin_app
+    container_name: phpldapadmin_app
+    restart: always
+    links:
+      - "openldap_app:phpldapadmin_app"
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "openldap_app"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - volume_phpldapadmin_app:/var/www/phpldapadmin
+    networks:
+      network_openldap:
+        ipv4_address: ${OPENLDAP_IP_PHPLDAPADMIN}
+        aliases:
+          - phpldapadmin_app
+      network_nginx:
+        ipv4_address: ${OPENLDAP_IP_NGINX}
+        aliases:
+          - phpldapadmin_app
+
+volumes:
+  volume_openldap_db:
+    name: volume_openldap_db
+    external: false
+  volume_openldap_conf:
+    name: volume_openldap_conf
+    external: false
+  volume_phpldapadmin_app:
+    name: volume_phpldapadmin_app
+    external: false
+
+networks:
+  network_openldap:
+    name: network_openldap
+    ipam:
+     config:
+       - subnet: ${OPENLDAP_IP_SUBNET}
+  network_nginx:
+    external:
+      name: network_nginx
+

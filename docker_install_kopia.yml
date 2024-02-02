@@ -1,0 +1,27 @@
+---
+- name: Docker Installation KOPIA
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: KOPIA_IP_SUBNET
+      prompt: Enter the Subnet Network for KOPIA
+      default: "{{ KOPIA_IP_SUBNET }}"
+      private: no
+    - name: KOPIA_IP_APP
+      prompt: Enter the Application IP for KOPIA
+      default: "{{ KOPIA_IP_APP }}"
+      private: no
+    - name: KOPIA_IP_NGINX
+      prompt: Enter the Nginx IP for KOPIA
+      default: "{{ KOPIA_IP_NGINX }}"
+      private: no
+    - name: KOPIA_APP_USERNAME
+      prompt: Enter the Username for KOPIA
+      default: "{{ KOPIA_APP_USERNAME }}"
+      private: no
+    - name: KOPIA_APP_USERPASS
+      prompt: Enter the Password for KOPIA
+      default: "{{ KOPIA_APP_USERPASS }}"
+      private: yes
+  roles:
+    - docker_install_kopia

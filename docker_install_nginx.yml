@@ -1,0 +1,14 @@
+---
+- name: Docker Installation Nginx
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: NGINX_USERNAME
+      prompt: Enter the admin username for Nginx Database
+      default: "{{ NGINX_DB_USERNAME }}"
+      private: no
+    - name: NGINX_PASSWORD
+      prompt: Enter the admin password for Nginx Database
+      default: "{{ NGINX_DB_ADMINPASS }}"
+  roles:
+    - docker_install_nginx

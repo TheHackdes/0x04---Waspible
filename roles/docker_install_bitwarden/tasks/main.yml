@@ -1,0 +1,76 @@
+---
+
+# Variable BITWARDEN_ADMIN_PAGE           in docker_install_bitwarden.yml 
+# Variable BITWARDEN_APP_ADMINPASS_PAGE  in docker_install_bitwarden.yml 
+
+- name: Print Variable
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - BITWARDEN_ADMIN_PAGE: "{{ BITWARDEN_ADMIN_PAGE }}"
+    - BITWARDEN_APP_ADMINPASS_PAGE: "{{ BITWARDEN_APP_ADMINPASS_PAGE }}"
+    - BITWARDEN_IP_APP : "{{ BITWARDEN_IP_APP }}"
+    - BITWARDEN_IP_NGINX: "{{ BITWARDEN_IP_NGINX }}"
+    - BITWARDEN_IP_SUBNET : "{{ BITWARDEN_IP_SUBNET }}"
+
+
+- name: Create Network Bitwarden
+  docker_network:
+    name: network_bitwarden
+    ipam_config:
+      - subnet: "{{ BITWARDEN_IP_SUBNET }}"
+
+- name: Create Volume Bitwarden
+  docker_volume:
+    name: "{{ item }}"
+  with_items:
+    - volume_bitwarden_app_data
+
+- name: Create Container Bitwarden (Without Admin Page)
+  docker_container:
+    name: bitwarden_app
+    image: vaultwarden/server:latest
+    state: started
+    restart_policy: always
+    volumes: 
+      - volume_bitwarden_app_data:/data
+    networks:
+      - name: network_bitwarden
+        ipv4_address: "{{ BITWARDEN_IP_APP }}"
+        aliases:
+          - bitwarden_app
+      - name: network_nginx
+        ipv4_address: "{{ BITWARDEN_IP_NGINX }}"
+        aliases:
+          - bitwarden_app
+  when: (BITWARDEN_ADMIN_PAGE == "no") or
+        (BITWARDEN_ADMIN_PAGE == "No") or
+        (BITWARDEN_ADMIN_PAGE == "NO") or
+        (BITWARDEN_ADMIN_PAGE == "N") or
+        (BITWARDEN_ADMIN_PAGE == "n")
+
+- name: Create Container Bitwarden (With Admin Page)
+  docker_container:
+    name: bitwarden_app
+    image: vaultwarden/server:latest
+    state: started
+    restart_policy: always
+    env:
+      WEBSOCKET_ENABLE: "true"
+      ADMIN_TOKEN: "{{ BITWARDEN_APP_ADMINPASS_PAGE }}"
+    volumes: 
+      - volume_bitwarden_app_data:/data
+    networks:
+      - name: network_bitwarden
+        ipv4_address: "{{ BITWARDEN_IP_APP }}"
+        aliases:
+          - bitwarden_app
+      - name: network_nginx
+        ipv4_address: "{{ BITWARDEN_IP_NGINX }}"
+        aliases:
+          - bitwarden_app
+  when: (BITWARDEN_ADMIN_PAGE == "yes") or
+        (BITWARDEN_ADMIN_PAGE == "Yes") or
+        (BITWARDEN_ADMIN_PAGE == "YES") or
+        (BITWARDEN_ADMIN_PAGE == "Y") or
+        (BITWARDEN_ADMIN_PAGE == "y")

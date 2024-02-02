@@ -1,0 +1,71 @@
+---
+# Variable NGINX_DB_ADMINPASS in defaults/main.yml
+# Variable NGINX_DB_USERNAME in defaults/main.yml
+
+- name: Print Variable
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - NGINX_IP_APP: "{{ NGINX_IP_APP }}"
+    - NGINX_IP_DB: "{{ NGINX_IP_DB }}"
+    - NGINX_IP_SUBNET: "{{ NGINX_IP_SUBNET }}"
+    - NGINX_DB_ADMINPASS: "{{ NGINX_DB_ADMINPASS }}"
+    - NGINX_DB_USERNAME: "{{ NGINX_DB_USERNAME }}"
+
+- name: Create Network Nginx Proxy Manager
+  docker_network:
+    name: network_nginx
+    ipam_config:
+      - subnet: "{{ NGINX_IP_SUBNET }}"
+
+- name: Create Volume Nginx
+  docker_volume:
+    name: "{{ item }}"
+  with_items:
+    - volume_nginx_app
+    - volume_nginx_db
+
+- name: Create Container Mariadb for Nginx
+  docker_container:
+    name: nginx_db
+    image: jc21/mariadb-aria:latest
+    state: started
+    restart_policy: always
+    env:
+      MYSQL_ROOT_PASSWORD: '{{ NGINX_DB_ADMINPASS}}'
+      MYSQL_DATABASE: 'nginx_db'
+      MYSQL_USER: '{{ NGINX_DB_USERNAME}}'
+      MYSQL_PASSWORD: '{{ NGINX_DB_ADMINPASS}}'
+    volumes: 
+      - volume_nginx_db:/var/lib/mysql
+    networks:
+      - name: network_nginx
+        ipv4_address: "{{ NGINX_IP_DB }}"
+        aliases:
+          - nginx_db
+
+- name: Create Container Nginx
+  docker_container:
+    name: nginx_app
+    image: jc21/nginx-proxy-manager:latest
+    state: started
+    restart_policy: always
+    env:
+      DB_MYSQL_HOST: "nginx_db"
+      DB_MYSQL_PORT: '3306'
+      DB_MYSQL_USER: "{{ NGINX_DB_USERNAME}}"
+      DB_MYSQL_PASSWORD: "{{ NGINX_DB_ADMINPASS}}"
+      DB_MYSQL_NAME: "nginx_db"
+    ports:
+      #      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes: 
+      - volume_nginx_app:/data
+      - volume_nginx_app:/etc/letsencrypt
+    networks:
+      - name: network_nginx
+        ipv4_address: "{{ NGINX_IP_APP }}"
+        aliases:
+          - nginx_app
+

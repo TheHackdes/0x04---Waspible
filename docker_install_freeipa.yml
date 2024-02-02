@@ -1,0 +1,24 @@
+---
+- name: Docker Installation FreeIPA
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: FREEIPA_APP_ADMINPASS
+      prompt: Enter the admin password for FreeIPA APP
+      default: "{{ FREEIPA_APP_ADMINPASS }}"
+      confirm: true
+      private: yes
+    - name: FREEIPA_APP_OS
+      prompt: Enter the OS for FreeIPA
+      default: "{{ FREEIPA_APP_OS }}"
+      private: no
+    - name: FREEIPA_APP_HOSTNAME
+      prompt: Enter the hostname for FreeIPA APP
+      default: "{{ FREEIPA_APP_HOSTNAME }}"
+      private: no
+    - name: FREEIPA_APP_DOMAIN
+      prompt: Enter the domain for FreeIPA
+      default: "{{ FREEIPA_APP_DOMAIN }}"
+      private: no
+  roles:
+    - docker_install_freeipa

@@ -1,0 +1,13 @@
+---
+# defaults file for roles/docker_install_freeipa
+
+FREEIPA_IP_APP:       10.0.28.10
+FREEIPA_IP_DB:        10.0.28.11
+FREEIPA_IP_NGINX:     10.0.20.28
+FREEIPA_IP_SUBNET:    10.0.28.0/24
+
+FREEIPA_APP_DOMAIN:       domain.intern
+FREEIPA_APP_HOSTNAME:     freeipa
+FREEIPA_APP_OS:           rocky-9
+FREEIPA_APP_ADMINPASS: freeipaAPPPa$$w0rd
+FREEIPA_DB_ADMINPASS:  freeipaDBPa$$w0ed

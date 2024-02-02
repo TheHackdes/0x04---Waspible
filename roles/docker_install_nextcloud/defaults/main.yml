@@ -1,0 +1,12 @@
+---
+# defaults file for roles/docker_install_nextcloud
+
+
+NEXTCLOUD_IP_APP:              10.0.22.10
+NEXTCLOUD_IP_DB:               10.0.22.11
+NEXTCLOUD_IP_NGINX:            10.0.20.22
+NEXTCLOUD_IP_SUBNET:           10.0.22.0/24
+
+NEXTCLOUD_APP_ADMINPASS: NextcloudAPPPa$$w0rd
+NEXTCLOUD_DB_ADMINPASS: NextcloudDBPa$$w0rd
+NEXTCLOUD_APP_USERNAME: admin

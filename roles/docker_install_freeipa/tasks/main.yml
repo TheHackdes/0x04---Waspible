@@ -1,0 +1,85 @@
+---
+# Variable  FREEIPA_APP_DOMAIN        in defaults/main.yml
+# Variable  FREEIPA_APP_HOSTNAME      in defaults/main.yml
+# Variable  FREEIPA_APP_OS            in defaults/main.yml
+# Variable  FREEIPA_APP_ADMINPASS  in defaults/main.yml
+# Variable  FREEIPA_DB_ADMINPASS   in defaults/main.yml
+
+- name: Print Variable
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - FREEIPA_APP_DOMAIN: "{{ FREEIPA_APP_DOMAIN }}"
+    - FREEIPA_IP_APP: "{{ FREEIPA_IP_APP }}"
+    - FREEIPA_IP_NGINX: "{{ FREEIPA_IP_NGINX }}"
+    - FREEIPA_IP_SUBNET: "{{ FREEIPA_IP_SUBNET }}"
+    - FREEIPA_APP_ADMINPASS: "{{ FREEIPA_APP_ADMINPASS }}"
+
+- name: Change CGroup Version to V1
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: GRUB_CMDLINE_LINUX_DEFAULT="systemd.unified_cgroup_hierarchy=0"
+  register: change_grub_cmdline
+
+- name: Command mkconfig
+  command: grub-mkconfig -o /boot/grub/grub.cfg
+  when: change_grub_cmdline.changed
+
+- name: Reboot the machine if change
+  reboot:
+    msg:
+  when: change_grub_cmdline.changed
+
+- name: Create Network freeipa
+  docker_network:
+    name: network_freeipa
+    ipam_config:
+      - subnet: "{{ FREEIPA_IP_SUBNET }}"
+        
+- name: Create Volume freeipa
+  docker_volume:
+    name: "{{ item }}"
+  with_items:
+    - volume_freeipa_app
+
+- name: Create Container freeipa
+  docker_container:
+    name: freeipa_app
+    image: freeipa/freeipa-server:{{ FREEIPA_APP_OS }}
+    state: started
+    tty: yes
+    interactive: yes
+    hostname: "{{ FREEIPA_APP_HOSTNAME }}.{{ FREEIPA_APP_DOMAIN }}"
+    restart_policy: unless-stopped
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 0
+    env:
+      IPA_SERVER_HOSTNAME: "{{ FREEIPA_APP_HOSTNAME }}.{{ FREEIPA_APP_DOMAIN }}"
+      TZ: "Europe/Paris"
+    capabilities: 
+      - NET_ADMIN
+    command:
+      - -U
+      - --domain={{ FREEIPA_APP_DOMAIN }}
+      - --realm={{ FREEIPA_APP_DOMAIN }}
+      - --http-pin={{ FREEIPA_APP_ADMINPASS }}
+      - --dirsrv-pin={{ FREEIPA_APP_ADMINPASS }}
+      - --ds-password={{ FREEIPA_APP_ADMINPASS }}
+      - --admin-password={{ FREEIPA_APP_ADMINPASS }}
+      - --no-host-dns
+      - --unattended
+    volumes: 
+      - /etc/localtime:/etc/localtime:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - volume_freeipa_app:/data:Z
+    networks:
+      - name: network_freeipa
+        ipv4_address: "{{ FREEIPA_IP_APP }}"
+        aliases:
+          - freeipa_app
+      - name: network_nginx
+        ipv4_address: "{{ FREEIPA_IP_NGINX }}"
+        aliases:
+          - freeipa_app
+

@@ -1,0 +1,68 @@
+---
+# Variable GLPI_DB_ADMINPASS in docker_install_glpi.yml 
+
+- name: Print Variable
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - GLPI_IP_APP: "{{ GLPI_IP_APP }}"
+    - GLPI_IP_DB: "{{ GLPI_IP_DB }}"
+    - GLPI_IP_NGINX: "{{ GLPI_IP_NGINX }}"
+    - GLPI_IP_SUBNET: "{{ GLPI_IP_SUBNET }}"
+    - GLPI_DB_ADMINPASS: "{{ GLPI_DB_ADMINPASS }}"
+
+- name: Create Network GLPI
+  docker_network:
+    name: network_glpi
+    ipam_config:
+      - subnet: "{{ GLPI_IP_SUBNET }}"
+
+- name: Create Volume GLPI
+  docker_volume:
+    name: "{{ item }}"
+  with_items:
+    - volume_glpi_db
+    - volume_glpi_app
+
+- name: Create Container Mariadb for GLPI
+  docker_container:
+    name: glpi_db
+    image: mariadb:latest
+    state: started
+    restart_policy: always
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ GLPI_DB_ADMINPASS }}"
+      MYSQL_DATABASE: glpi_db
+    volumes: 
+      - volume_glpi_db:/var/lib/mysql
+      - volume_glpi_db:/etc/mysql/conf.d
+    networks:
+      - name: network_glpi
+        ipv4_address: "{{ GLPI_IP_DB }}"
+        aliases:
+          - glpi_db
+
+- name: Create Container GLPI
+  docker_container:
+    name: glpi_app
+    image: diouxx/glpi
+    state: started
+    restart_policy: always
+    env:
+      TIMEZONE: Europe/Paris
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - volume_glpi_app:/var/www/html/glpi
+    networks:
+      - name: network_glpi
+        ipv4_address: "{{ GLPI_IP_APP }}"
+        aliases:
+          - glpi_app
+      - name: network_nginx
+        ipv4_address: "{{ GLPI_IP_NGINX }}"
+        aliases:
+          - glpi_app
+    links:
+      - "glpi_db:glpi_db"
+

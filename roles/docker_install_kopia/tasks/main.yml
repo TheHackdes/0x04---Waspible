@@ -1,0 +1,67 @@
+---
+# Variable KOPIA_APP_USERPASS in docker_install_kopia.yml 
+# Variable KOPIA_APP_USERNAME in docker_install_kopia.yml 
+
+- name: Print Variable
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - KOPIA_IP_APP: "{{ KOPIA_IP_APP }}"
+    - KOPIA_IP_NGINX: "{{ KOPIA_IP_NGINX }}"
+    - KOPIA_IP_SUBNET: "{{ KOPIA_IP_SUBNET }}"
+    - KOPIA_APP_USERNAME: "{{ KOPIA_APP_USERNAME }}"
+    - KOPIA_APP_USERPASS: "{{ KOPIA_APP_USERPASS }}"
+
+- name: Create Network KOPIA
+  docker_network:
+    name: network_kopia
+    ipam_config:
+      - subnet: "{{ KOPIA_IP_SUBNET }}"
+
+- name: Create Volume KOPIA
+  docker_volume:
+    name: "{{ item }}"
+  with_items:
+    - volume_kopia_app_config
+    - volume_kopia_app_cache
+    - volume_kopia_app_logs
+    - volume_kopia_app_repo
+    - volume_kopia_app_tmp
+
+
+- name: Create Container KOPIA
+  docker_container:
+    name: kopia_app
+    image: kopia/kopia:latest
+    state: started
+    restart_policy: always
+    env:
+      TZ: "Europe/Paris"
+      USER: "{{ KOPIA_APP_USERNAME }}"
+      KOPIA_APP_USERPASS: "{{ KOPIA_APP_USERPASS }}"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - volume_kopia_app_config:/app/config
+      - volume_kopia_app_cache:/app/cache
+      - volume_kopia_app_logs:/app/logs
+      - /var/lib/docker/volumes/volume_nextcloud_app/_data/data/:/source:ro
+      - volume_kopia_app_repo:/repository
+      - volume_kopia_app_tmp:/tmp:rw
+    networks:
+      - name: network_kopia
+        ipv4_address: "{{ KOPIA_IP_APP }}"
+        aliases:
+          - kopia_app
+      - name: network_nginx
+        ipv4_address: "{{ KOPIA_IP_NGINX }}"
+        aliases:
+          - kopia_app
+    command:
+      - server
+      - start
+      - --disable-csrf-token-checks
+      - --insecure
+      - --address=0.0.0.0:51515
+      - --server-username={{ KOPIA_APP_USERNAME }}
+      - --server-password={{ KOPIA_APP_USERPASS }}

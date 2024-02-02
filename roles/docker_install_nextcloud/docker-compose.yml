@@ -1,0 +1,59 @@
+version: '3.5'
+services:
+  nextcloud_app:
+    image: 'nextcloud:25.0.3-apache'
+    hostname: nextcloud_app
+    container_name: nextcloud_app
+    restart: always
+    environment:
+      NEXTCLOUD_ADMIN_USER: "<USER_ADMIN>"
+      NEXTCLOUD_ADMIN_PASSWORD: "<PASSWORD_ADMIN>"
+      MYSQL_DATABASE: nextcloud_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: "<PASSWORD_DB>"
+      MYSQL_HOST: 'nextcloud_db'
+
+    volumes:
+      - volume_nextcloud_app:/var/www/html
+    networks:
+      network_nginx:
+        ipv4_address: 172.20.20.14
+        aliases:
+          - nextcloud_app
+      network_nextcloud:
+        ipv4_address: 172.20.22.10
+        aliases:
+          - nextcloud_db
+  nextcloud_db:
+    image: 'mariadb:latest'
+    hostname: nextcloud_db
+    container_name: nextcloud_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: '<PASSWORD_DB>'
+      MYSQL_DATABASE: 'nextcloud_db'
+    volumes:
+      - volume_nextcloud_db:/var/lib/mysql
+      - volume_nextcloud_db/etc/mysql/conf.d
+    networks:
+      network_nextcloud:
+        ipv4_address: 172.20.22.11
+        aliases:
+          - nextcloud_db
+
+volumes:
+  volume_nextcloud_app:
+    name: volume_nextcloud_app
+    external: false
+  volume_nextcloud_db:
+    name: volume_nextcloud_db
+    external: false
+networks:
+  network_nextcloud:
+    name: network_nextcloud
+    ipam:
+     config:
+       - subnet: 172.20.22.0/24
+  network_nginx:
+    external:
+      name: network_nginx

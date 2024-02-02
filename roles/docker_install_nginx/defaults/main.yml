@@ -1,0 +1,9 @@
+---
+# defaults file for roles/docker_install_nginx
+
+NGINX_IP_APP:      10.0.20.10
+NGINX_IP_DB:       10.0.20.11
+NGINX_IP_SUBNET:   10.0.20.0/24
+
+NGINX_DB_ADMINPASS:  NginxPa$$w0rd
+NGINX_DB_USERNAME:  admin

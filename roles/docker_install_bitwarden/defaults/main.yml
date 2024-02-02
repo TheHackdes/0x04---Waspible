@@ -1,0 +1,9 @@
+---
+# defaults file for docker_install_bitwarden
+
+BITWARDEN_IP_APP:              10.0.26.10
+BITWARDEN_IP_NGINX:            10.0.20.26
+BITWARDEN_IP_SUBNET:           10.0.26.0/24
+
+BITWARDEN_ADMIN_PAGE:          no
+BITWARDEN_APP_ADMINPASS_PAGE: BitwardenPa$$w0rd

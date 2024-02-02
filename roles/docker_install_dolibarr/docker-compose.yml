@@ -1,0 +1,66 @@
+version: '3.5'
+services:
+  dolibarr_app:
+    image: 'tuxgasy/dolibarr:latest'
+    hostname: dolibarr_app
+    container_name: dolibarr_app
+    restart: unless-stopped
+    environment:
+      DOLI_DB_HOST: "dolibarr_db"
+      DOLI_DB_USER: "root"
+      DOLI_DB_PASSWORD: "${DOLIBARR_PASSWORD_DB}"
+      DOLI_DB_NAME: "dolibarr_db"
+      DOLI_ADMIN_LOGIN: "${DOLIBARR_APP_ADMINAME}"
+      DOLI_ADMIN_PASSWORD: "${DOLIBARR_ADMIN_PASSWORD}"
+      PHP_INI_DATE_TIMEZONE: "Europe/Paris"
+      DOLI_INSTALL_AUTO : 1
+    volumes:
+      - volume_dolibarr_app:/var/www/documents
+      - volume_dolibarr_app_conf:/var/www/html/conf/
+    networks:
+      network_nginx:
+        ipv4_address: ${DOLIBARR_IP_NGINX}
+        aliases:
+          - dolibarr_app
+      network_dolibarr:
+        ipv4_address: ${DOLIBARR_IP_APP}
+        aliases:
+          - dolibarr_app
+
+  dolibarr_db:
+    image: 'mariadb:latest'
+    hostname: dolibarr_db
+    container_name: dolibarr_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DOLIBARR_PASSWORD_DB}"
+      MYSQL_DATABASE: 'dolibarr_db'
+    volumes:
+      - volume_dolibarr_db:/var/lib/mysql
+    networks:
+      network_dolibarr:
+        ipv4_address: ${DOLIBARR_IP_DB}
+        aliases:
+          - dolibarr_db
+
+volumes:
+  volume_dolibarr_app:
+    name: volume_dolibarr_app
+    external: false
+  volume_dolibarr_app_conf:
+    name: volume_dolibarr_app_conf
+    external: false
+  volume_dolibarr_db:
+    name: volume_dolibarr_db
+    external: false
+
+networks:
+  network_dolibarr:
+    name: network_dolibarr
+    ipam:
+     config:
+       - subnet: ${DOLIBARR_IP_SUBNET}
+  network_nginx:
+    external:
+      name: network_nginx
+    

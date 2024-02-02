@@ -1,0 +1,46 @@
+# Default username : admin
+# Default password : adminadmin
+
+version: '3.5'
+services:
+  qbitorrent_app:
+    image: 'lscr.io/linuxserver/qbittorrent:latest'
+    hostname: qbitorrent_app
+    container_name: qbitorrent_app
+    restart: always
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: "Europe/Paris"
+    volumes:
+      - volume_qbitorrent_app_config:/config
+      - volume_qbitorrent_app_downloads:/downloads
+      - volume_qbitorrent_app_watch:/watch
+    networks:
+      network_nginx:
+        ipv4_address: ${QBITORRENT_IP_NGINX}
+        aliases:
+          - qbitorrent_app
+      network_qbitorrent:
+        ipv4_address: ${QBITORRENT_IP_APP}
+        aliases:
+          - qbitorrent_app
+volumes:
+  volume_qbitorrent_app_downloads:
+    name: volume_qbitorrent_app_downloads
+    external: false
+  volume_qbitorrent_app_watch:
+    name: volume_qbitorrent_app_watch
+    external: false
+  volume_qbitorrent_app_config:
+    name: volume_qbitorrent_app_config
+    external: false
+networks:
+  network_qbitorrent:
+    name: network_qbitorrent
+    ipam:
+     config:
+       - subnet: ${QBITORRENT_IP_SUBNET}
+  network_nginx:
+    external:
+      name: network_nginx

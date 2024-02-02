@@ -1,0 +1,31 @@
+---
+- name: Docker Installation Openldap
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: OPENLDAP_APP_ORGANISATION_NAME
+      prompt: Enter the name of your organization
+      default: "{{ OPENLDAP_APP_ORGANISATION_NAME }}"
+      private: no
+    - name: OPENLDAP_APP_DOMAIN
+      prompt: Enter the domain
+      default: "{{ OPENLDAP_APP_DOMAIN }}"
+      private: no
+    - name: OPENLDAP_APP_ADMINPASS
+      prompt: Enter the admin Password for Openldap
+      default: "{{ OPENLDAP_APP_ADMINPASS }}"
+      confirm: true
+    - name: OPENLDAP_APP_MAP_WITH_NEXTCLOUD
+      prompt: Do you want map with Nextcloud (yes/no)
+      private: no
+      default: "{{ OPENLDAP_APP_MAP_WITH_NEXTCLOUD }}"
+    - name: OPENLDAP_APP_MAP_WITH_GLPI
+      prompt: Do you want map with GLPI (yes/no)
+      private: no
+      default: "{{ OPENLDAP_APP_MAP_WITH_GLPI }}"
+    - name: OPENLDAP_APP_MAP_WITH_DOLIBARR
+      prompt: Do you want map with Dolibarr (yes/no)
+      private: no
+      default: "{{ OPENLDAP_APP_MAP_WITH_DOLIBARR }}"
+  roles:
+    - docker_install_openldap

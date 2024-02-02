@@ -1,0 +1,11 @@
+---
+- name: Docker Installation Duplicati
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: DUPLICATI_APP_VOLUME_SOURCE
+      prompt: Enter the source path  
+      default: "{{ DUPLICATI_APP_VOLUME_SOURCE}}"
+      private: no
+  roles:
+    - docker_install_duplicati

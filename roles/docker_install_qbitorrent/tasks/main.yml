@@ -1,0 +1,42 @@
+---
+# Variable QBITORRENT_IP_APP       in docker_install_qbitorrent.yml 
+# Variable QBITORRENT_IP_NGINX     in docker_install_qbitorrent.yml 
+# Variable QBITORRENT_IP_SUBNET    in docker_install_qbitorrent.yml 
+
+- name: Create Network QBitorrent
+  docker_network:
+    name: network_qbitorrent
+    ipam_config:
+      - subnet: "{{ QBITORRENT_IP_SUBNET }}"
+
+- name: Create Volume QBitorrent
+  docker_volume:
+    name: "{{ item }}"
+  with_items:
+    - volume_qbitorrent_app_config
+    - volume_qbitorrent_app_downloads
+    - volume_qbitorrent_app_watch
+
+- name: Create Container QBitorrent
+  docker_container:
+    name: qbitorrent_app
+    image: lscr.io/linuxserver/qbitorrent:latest
+    state: started
+    restart_policy: always
+    env:
+      PUID: "1000"
+      PGID: "1000"
+      TZ: Europe/Paris
+    volumes: 
+      - volume_qbitorrent_app_config:/config
+      - volume_qbitorrent_app_downloads:/downloads
+      - volume_qbitorrent_app_watch:/watch
+    networks:
+      - name: network_qbitorrent
+        ipv4_address: "{{ QBITORRENT_IP_APP }}"
+        aliases:
+          - qbitorrent_app
+      - name: network_nginx
+        ipv4_address: "{{ QBITORRENT_IP_NGINX }}"
+        aliases:
+          - qbitorrent_app

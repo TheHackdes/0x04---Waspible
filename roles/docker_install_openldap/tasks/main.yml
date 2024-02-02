@@ -1,0 +1,126 @@
+---
+# Variable OPENLDAP_APP_ADMINPASS     in defaults/main.yml
+# Variable OPENLDAP_APP_DOMAIN             in defaults/main.yml
+# Variable OPENLDAP_APP_MAP_WITH_GLPI      in defaults/main.yml
+# Variable OPENLDAP_APP_MAP_WITH_NEXTCLOUD in defaults/main.yml
+# Variable OPENLDAP_APP_MAP_WITH_DOLIBARR  in defaults/main.yml
+# Variable OPENLDAP_APP_ORGANISATION_NAME  in defaults/main.yml
+
+- name: Print Variable
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - NEXTCLOUD_IP_OPENLDAP: "{{ NEXTCLOUD_IP_OPENLDAP }}"
+    - GLPI_IP_OPENLDAP: "{{ GLPI_IP_OPENLDAP }}"
+    - DOLIBARR_IP_OPENLDAP: "{{ DOLIBARR_IP_OPENLDAP }}"
+    - OPENLDAP_IP_APP: "{{ OPENLDAP_IP_APP }}"
+    - OPENLDAP_IP_PHPLDAPADMIN: "{{ OPENLDAP_IP_PHPLDAPADMIN }}"
+    - OPENLDAP_IP_NGINX: "{{ OPENLDAP_IP_NGINX }}"
+    - OPENLDAP_IP_SUBNET: "{{ OPENLDAP_IP_SUBNET }}"
+    - OPENLDAP_APP_ADMINPASS: "{{ OPENLDAP_APP_ADMINPASS }}"
+    - OPENLDAP_APP_DOMAIN: "{{ OPENLDAP_APP_DOMAIN }}"
+    - OPENLDAP_APP_ORGANISATION_NAME: "{{ OPENLDAP_APP_ORGANISATION_NAME }}"
+
+- name: Create Network OpenLdap
+  docker_network:
+    name: network_openldap
+    ipam_config:
+      - subnet: "{{ OPENLDAP_IP_SUBNET }}"
+
+- name: Create Volume Openldap Configuration
+  docker_volume:
+    name: volume_openldap_conf
+
+- name: Create Volume Openldap Database
+  docker_volume:
+    name: volume_openldap_db
+
+- name: Create Volume PhpLdapAdmin App
+  docker_volume:
+    name: volume_phpldapadmin_app
+
+- name: Create Container Openldap
+  docker_container:
+    name: openldap_app
+    image: osixia/openldap:latest
+    state: started
+    restart_policy: always
+    env:
+      LDAP_ORGANISATION: "{{ OPENLDAP_APP_ORGANISATION_NAME }}"
+      LDAP_DOMAIN: "{{ OPENLDAP_APP_DOMAIN }}"
+      LDAP_ADMIN_PASSWORD: "{{ OPENLDAP_APP_ADMINPASS }}"
+    ports:
+      - "389:389"
+      - "636:636"
+    networks:
+      - name: network_openldap
+        ipv4_address: "{{ OPENLDAP_IP_APP }}"
+        aliases:
+          - openldap_app
+    volumes:
+      - volume_openldap_db:/var/lib/ldap
+      - volume_openldap_conf:/etc/ldap/slapd.d
+
+- name: Create Container PhpLdapAdmin
+  docker_container:
+    name: phpldapadmin_app
+    image: osixia/phpldapadmin:latest
+    state: started
+    restart_policy: always
+    links:
+      - "openldap_app:phpldapadmin_app"
+    env:
+      PHPLDAPADMIN_LDAP_HOSTS: "openldap_app"
+    networks:
+      - name: network_openldap
+        ipv4_address: "{{ OPENLDAP_IP_PHPLDAPADMIN }}"
+        aliases:
+          - phpldapadmin_app
+      - name: network_nginx
+        ipv4_address: "{{ OPENLDAP_IP_NGINX }}"
+        aliases:
+          - phpldapadmin_app
+    volumes:
+      - volume_phpldapadmin_app:/var/www/phpldapadmin
+
+- name: Add OpenLDAP to networks network_nextcloud
+  docker_container:
+    name: openldap_app
+    networks:
+      - name: network_nextcloud
+        ipv4_address: "{{ NEXTCLOUD_IP_OPENLDAP }}"
+        aliases:
+          - openldap_app
+  when: (OPENLDAP_APP_MAP_WITH_NEXTCLOUD == "yes") or
+        (OPENLDAP_APP_MAP_WITH_NEXTCLOUD == "Yes") or
+        (OPENLDAP_APP_MAP_WITH_NEXTCLOUD == "YES") or
+        (OPENLDAP_APP_MAP_WITH_NEXTCLOUD == "Y") or
+        (OPENLDAP_APP_MAP_WITH_NEXTCLOUD == "y")
+
+- name: Add OpenLDAP to networks network_glpi
+  docker_container:
+    name: openldap_app
+    networks:
+      - name: network_glpi
+        ipv4_address: "{{ GLPI_IP_OPENLDAP }}"
+        aliases:
+          - openldap_app
+  when: (OPENLDAP_APP_MAP_WITH_GLPI == "yes") or
+        (OPENLDAP_APP_MAP_WITH_GLPI == "Yes") or
+        (OPENLDAP_APP_MAP_WITH_GLPI == "YES") or
+        (OPENLDAP_APP_MAP_WITH_GLPI == "Y") or
+        (OPENLDAP_APP_MAP_WITH_GLPI == "y")
+
+- name: Add OpenLDAP to networks network_dolibarr
+  docker_container:
+    name: openldap_app
+    networks:
+      - name: network_dolibarr
+        ipv4_address: "{{ DOLIBARR_IP_OPENLDAP }}"
+        aliases:
+          - openldap_app
+  when: (OPENLDAP_APP_MAP_WITH_DOLIBARR == "yes") or
+        (OPENLDAP_APP_MAP_WITH_DOLIBARR == "Yes") or
+        (OPENLDAP_APP_MAP_WITH_DOLIBARR == "YES") or
+        (OPENLDAP_APP_MAP_WITH_DOLIBARR == "Y") or
+        (OPENLDAP_APP_MAP_WITH_DOLIBARR == "y")

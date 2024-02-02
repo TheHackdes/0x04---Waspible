@@ -1,0 +1,10 @@
+---
+# defaults file for roles/docker_install_duplicati
+
+DUPLICATI_IP_APP:        10.0.21.10
+DUPLICATI_IP_NGINX:      10.0.20.21
+DUPLICATI_IP_SUBNET:     10.0.21.0/24
+
+DUPLICATI_APP_USERPASS:      DolibarrPa$$w0rd
+DUPLICATI_APP_USERNAME:      admin
+DUPLICATI_APP_VOLUME_SOURCE: /home

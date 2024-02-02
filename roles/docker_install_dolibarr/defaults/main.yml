@@ -1,0 +1,11 @@
+---
+# defaults file for roles/docker_install_dolibarr
+
+DOLIBARR_IP_APP:          10.0.23.10
+DOLIBARR_IP_DB:           10.0.23.11
+DOLIBARR_IP_NGINX:        10.0.20.23
+DOLIBARR_IP_SUBNET:       10.0.23.0/24
+
+DOLIBARR_APP_ADMINAME:     admin
+DOLIBARR_ADMIN_PASSWORD:  DolibarrPa$$w0rd
+DOLIBARR_PASSWORD_DB:     DolibarrDBPa$$w0rd

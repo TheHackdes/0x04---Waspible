@@ -1,0 +1,7 @@
+---
+- name: Docker Installation QBitorrent
+  connection: local
+  hosts: all
+  roles:
+    - docker_install_qbitorrent
+

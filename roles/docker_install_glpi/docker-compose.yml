@@ -1,0 +1,63 @@
+# Default username : glpi
+# Default password : glpi
+
+version: '3.5'
+services:
+  glpi_app:
+    image: 'diouxx/glpi'
+    hostname: glpi_app
+    container_name: glpi_app
+    restart: always
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: "Europe/Paris"
+      VERSION_GLPI: 10.0.10
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - volume_glpi_app:/var/www/html/glpi
+    networks:
+      network_nginx:
+        ipv4_address: ${GLPI_IP_NGINX}
+        aliases:
+          - glpi_app
+      network_glpi:
+        ipv4_address: ${GLPI_IP_APP}
+        aliases:
+          - glpi_app
+  glpi_db:
+    image: 'mariadb:latest'
+    hostname: glpi_db
+    container_name: glpi_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${GLPI_DB_ADMINPASS}
+      MYSQL_DATABASE: glpi_db
+    volumes:
+      - volume_glpi_db:/var/lib/mysql
+      - volume_glpi_db:/etc/mysql/conf.d
+    networks:
+      network_glpi:
+        ipv4_address: ${GLPI_IP_DB}
+        aliases:
+          - glpi_db
+
+volumes:
+  volume_glpi_app:
+    name: volume_glpi_app
+    external: false
+  volume_glpi_db:
+    name: volume_glpi_db
+    external: false
+
+networks:
+  network_glpi:
+    name: network_glpi
+    ipam:
+     config:
+       - subnet: ${GLPI_IP_SUBNET}
+  network_nginx:
+    external:
+      name: network_nginx
+

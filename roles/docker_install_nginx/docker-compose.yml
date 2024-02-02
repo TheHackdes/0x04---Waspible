@@ -1,0 +1,53 @@
+version: '3.5'
+services:
+  nginx_app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    hostname: nginx_app
+    container_name: nginx_app
+    restart: always
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    environment:
+      DB_MYSQL_HOST: "nginx_db"
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_PASSWORD: "<PASSWORD_DB>"
+      DB_MYSQL_NAME: "nginx_db"
+    volumes:
+      - volume_nginx_app:/data
+      - volume_nginx_app:/etc/letsencrypt
+    networks:
+      network_nginx:
+        ipv4_address: 172.20.20.10
+        aliases:
+          - nginx_app
+  nginx_db:
+    image: 'jc21/mariadb-aria:latest'
+    hostname: nginx_db
+    container_name: nginx_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: '<PASSWORD_DB>'
+      MYSQL_DATABASE: 'nginx_db'
+    volumes:
+      - volume_nginx_db:/var/lib/mysql
+    networks:
+      network_nginx:
+        ipv4_address: 172.20.20.11
+        aliases:
+          - nginx_db
+
+volumes:
+  volume_nginx_app:
+    name: volume_nginx_app
+    external: false
+  volume_nginx_db:
+    name: volume_nginx_db
+    external: false
+networks:
+  network_nginx:
+    name: network_nginx
+    ipam:
+     config:
+       - subnet: 172.20.20.0/24

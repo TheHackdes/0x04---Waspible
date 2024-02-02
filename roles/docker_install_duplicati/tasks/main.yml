@@ -1,0 +1,54 @@
+---
+# Variable DUPLICATI_APP_USERPASS       in docker_install_duplicati.yml
+# Variable DUPLICATI_APP_USERNAME       in docker_install_duplicati.yml
+# Variable DUPLICATI_APP_VOLUME_SOURCE  in docker_install_duplicati.yml
+
+- name: Print Variable
+  debug:
+    msg: "{{ item }}"
+  with_items:
+    - DUPLICATI_IP_APP: "{{ DUPLICATI_IP_APP }}"
+    - DUPLICATI_IP_NGINX: "{{ DUPLICATI_IP_NGINX }}"
+    - DUPLICATI_IP_SUBNET: "{{ DUPLICATI_IP_SUBNET }}"
+    - DUPLICATI_APP_USERPASS: "{{ DUPLICATI_APP_USERPASS }}"
+    - DUPLICATI_APP_USERNAME: "{{ DUPLICATI_APP_USERNAME }}"
+    - DUPLICATI_APP_VOLUME_SOURCE: "{{ DUPLICATI_APP_VOLUME_SOURCE }}"
+
+
+- name: Create Network Duplicati
+  docker_network:
+    name: network_duplicati
+    ipam_config:
+      - subnet: "{{ DUPLICATI_IP_SUBNET }}"
+
+- name: Create Volume Duplicati Configuration
+  docker_volume:
+    name: volume_duplicati_conf
+
+- name: Create Volume Duplicati Backup
+  docker_volume:
+    name: volume_duplicati_back
+
+- name: Create Container Duplicati
+  docker_container:
+    name: duplicati_app
+    image: lscr.io/linuxserver/duplicati:latest
+    state: started
+    restart_policy: always
+    env:
+      PUID: "0"
+      PGID: "0"
+      TZ: "Europe/Paris"
+    volumes: 
+      - volume_duplicati_conf:/config
+      - volume_duplicati_back:/backups
+      - "{{ DUPLICATI_APP_VOLUME_SOURCE }}:/source"
+    networks:
+      - name: network_nginx
+        ipv4_address: "{{ DUPLICATI_IP_NGINX }}"
+        aliases:
+          - duplicati_app
+      - name: network_duplicati
+        ipv4_address: "{{ DUPLICATI_IP_APP }}"
+        aliases:
+          - duplicati_app

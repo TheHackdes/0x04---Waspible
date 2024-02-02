@@ -1,0 +1,8 @@
+---
+# defaults file for roles/docker_install_qbitorrent
+# Default username : admin
+# Default password : adminadmin
+
+QBITORRENT_IP_APP:       10.0.27.10
+QBITORRENT_IP_NGINX:     10.0.20.18
+QBITORRENT_IP_SUBNET:    10.0.27.0/24

@@ -1,0 +1,41 @@
+version: '3.5'
+services:
+  duplicati_app:
+    image: 'lscr.io/linuxserver/duplicati:latest'
+    hostname: duplicati_app
+    container_name: duplicati_app
+    restart: always
+    environment:
+      PUID: "0"
+      PGID: "0"
+      TZ: "Europe/Paris"
+    volumes:
+      - volume_duplicati_app_conf:/config
+      - volume_duplicati_app_back:/backups
+      - /var/lib/docker/volumes/volume_nextcloud_app/_data/data/:/source  # For example /home/user or /opt
+    networks:
+      network_nginx:
+        ipv4_address: 172.20.20.12
+        aliases:
+          - duplicati_app
+      network_duplicati:
+        ipv4_address: 172.20.21.10
+        aliases:
+          - duplicati_app
+  
+volumes:
+  volume_duplicati_app_conf:
+    name: volume_duplicati_app_conf
+    external: false
+  volume_duplicati_app_back:
+    name: volume_duplicati_app_back
+    external: false
+networks:
+  network_duplicati:
+    name: network_duplicati
+    ipam:
+     config:
+       - subnet: 172.20.21.0/24
+  network_nginx:
+    external:
+      name: network_nginx

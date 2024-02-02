@@ -1,0 +1,54 @@
+version: '3.5'
+services:
+  freeipa_app:
+    image: 'freeipa/freeipa-server:{{ FREEIPA_APP_OS }}'
+    hostname: freeipa_app
+    container_name: freeipa_app
+    restart: always
+    tty: true
+    interactive: true
+    environment:
+      IPA_SERVER_HOSTNAME: "{{ FREEIPA_APP_HOSTNAME }}.{{ FREEIPA_APP_DOMAIN }}"        
+      TZ: "Europe/Paris"
+    capabilities:
+      - NET_ADMIN
+    command:
+      - -U
+      - --domain={{ FREEIPA_APP_DOMAIN }}
+      - --realm={{ FREEIPA_APP_DOMAIN }}
+      - --http-pin={{ FREEIPA_APP_ADMINPASS }}
+      - --dirsrv-pin={{ FREEIPA_APP_ADMINPASS }}
+      - --ds-password={{ FREEIPA_APP_ADMINPASS }}
+      - --admin-password={{ FREEIPA_APP_ADMINPASS }}
+      - --no-host-dns
+      - --unattended
+    volumes:
+      - etc/localtime:/etc/localtime:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - volume_freeipa_app:/data:Z
+    networks:
+      network_nginx:
+        ipv4_address: 172.20.20.14
+        aliases:
+          - freeipa_app
+      network_freeipa:
+        ipv4_address: 172.20.22.10
+        aliases:
+          - freeipa_db
+
+volumes:
+  volume_freeipa_app:
+    name: volume_freeipa_app
+    external: false
+  volume_freeipa_db:
+    name: volume_freeipa_db
+    external: false
+networks:
+  network_freeipa:
+    name: network_freeipa
+    ipam:
+     config:
+       - subnet: 172.20.22.0/24
+  network_nginx:
+    external:
+      name: network_nginx

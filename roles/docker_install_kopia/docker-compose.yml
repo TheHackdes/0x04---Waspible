@@ -1,0 +1,65 @@
+version: '3.5'
+services:
+  kopia_app:
+    image: 'kopia/kopia:latest'
+    hostname: kopia_app
+    container_name: kopia_app
+    restart: always
+    environment:
+      TZ: "Europe/Paris"
+      USER: ${KOPIA_APP_USERNAME}
+      KOPIA_APP_USERPASS: ${KOPIA_APP_USERPASS}
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - volume_kopia_app_config:/app/config
+      - volume_kopia_app_cache:/app/cache
+      - volume_kopia_app_logs:/app/logs
+      - /var/lib/docker/volumes/volume_nextcloud_app/_data/data/:/source:ro
+      - volume_kopia_app_repo:/repository
+      - volume_kopia_app_tmp:/tmp:shared
+    command:
+      - server
+      - start
+      - --disable-csrf-token-checks
+      - --insecure
+      - --address=0.0.0.0:51515
+      - --server-username=${KOPIA_APP_USERNAME}
+      - --server-password=${KOPIA_APP_USERPASS}
+    networks:
+      network_nginx:
+        ipv4_address: ${KOPIA_IP_NGINX}
+        aliases:
+          - kopia_app
+      network_kopia:
+        ipv4_address: ${KOPIA_IP_APP}
+        aliases:
+          - kopia_app
+
+volumes:
+  volume_kopia_app_config:
+    name: volume_kopia_app_config
+    external: false
+  volume_kopia_app_cache:
+    name: volume_kopia_app_cache
+    external: false
+  volume_kopia_app_logs:
+    name: volume_kopia_app_logs
+    external: false
+  volume_kopia_app_repo:
+    name: volume_kopia_app_repo
+    external: false
+  volume_kopia_app_tmp:
+    name: volume_kopia_app_tmp
+    external: false
+
+networks:
+  network_kopia:
+    name: network_kopia
+    ipam:
+     config:
+       - subnet: ${KOPIA_IP_SUBNET}
+  network_nginx:
+    external:
+      name: network_nginx
+

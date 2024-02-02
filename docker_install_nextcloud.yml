@@ -1,0 +1,17 @@
+---
+- name: Docker Installation Nextcloud
+  connection: local
+  hosts: all
+  vars_prompt:
+    - name: NEXTCLOUD_APP_USERNAME
+      prompt: Enter the admin username for Nextcloud APP
+      default: "{{ NEXTCLOUD_APP_USERNAME }}"
+      private: no
+    - name: NEXTCLOUD_PASSWORD
+      prompt: Enter the admin password for Nextcloud APP
+      default: "{{ NEXTCLOUD_APP_ADMINPASS }}"
+    - name: NEXTCLOUD_DB_ADMINPASS
+      prompt: Enter the SQL Password for Nextcloud DB
+      default: "{{ NEXTCLOUD_DB_ADMINPASS }}"
+  roles:
+    - docker_install_nextcloud
